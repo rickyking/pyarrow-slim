@@ -112,6 +112,8 @@ jobs:
                 -DARROW_COMPUTE=ON \
                 -DARROW_IPC=ON \
                 -DARROW_DATASET=ON \
+                -DARROW_CSV=ON \
+                -DARROW_JSON=ON \
                 -DARROW_WITH_SNAPPY=ON \
                 -DARROW_WITH_ZSTD=ON \
                 -DARROW_WITH_LZ4=ON \
@@ -126,8 +128,6 @@ jobs:
                 -DARROW_ORC=OFF \
                 -DARROW_CUDA=OFF \
                 -DARROW_SUBSTRAIT=OFF \
-                -DARROW_CSV=OFF \
-                -DARROW_JSON=OFF \
                 -DARROW_ACERO=OFF \
                 -DARROW_BUILD_TESTS=OFF \
                 -DARROW_BUILD_BENCHMARKS=OFF \
