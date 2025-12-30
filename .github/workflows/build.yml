@@ -126,7 +126,8 @@ jobs:
                 -DARROW_BUILD_TESTS=OFF \
                 -DARROW_BUILD_BENCHMARKS=OFF \
                 -DARROW_BUILD_UTILITIES=OFF \
-                -DARROW_DEPENDENCY_SOURCE=BUNDLED
+                -DARROW_DEPENDENCY_SOURCE=BUNDLED \
+                -DARROW_THRIFT_URL="https://archive.apache.org/dist/thrift/0.20.0/thrift-0.20.0.tar.gz"
               ninja install
               
               # Build PyArrow
