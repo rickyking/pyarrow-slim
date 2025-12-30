@@ -263,7 +263,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Download wheels
         uses: actions/download-artifact@v4
@@ -277,7 +277,7 @@ jobs:
       - name: Install slim PyArrow
         run: |
           # Find the correct wheel for this platform
-          WHEEL=$(ls wheels/*cp311*${{ matrix.platform_tag }}*.whl | head -1)
+          WHEEL=$(ls wheels/*cp312*${{ matrix.platform_tag }}*.whl | head -1)
           echo "Installing: ${WHEEL}"
           pip install "${WHEEL}"
 
@@ -322,7 +322,7 @@ jobs:
 
       - name: Test wheel size
         run: |
-          WHEEL=$(ls wheels/*cp311*${{ matrix.platform_tag }}*.whl | head -1)
+          WHEEL=$(ls wheels/*cp312*${{ matrix.platform_tag }}*.whl | head -1)
           SIZE=$(stat -c%s "${WHEEL}")
           SIZE_MB=$((SIZE / 1024 / 1024))
           echo "Wheel size: ${SIZE_MB} MB"
