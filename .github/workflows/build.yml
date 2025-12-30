@@ -25,29 +25,21 @@ jobs:
         include:
           # Linux AMD64
           - arch: amd64
-            python: '3.10'
-            manylinux: manylinux2014_x86_64
-            platform_tag: x86_64
-          - arch: amd64
-            python: '3.11'
-            manylinux: manylinux2014_x86_64
-            platform_tag: x86_64
-          - arch: amd64
             python: '3.12'
-            manylinux: manylinux2014_x86_64
+            manylinux: manylinux_2_28_x86_64
+            platform_tag: x86_64
+          - arch: amd64
+            python: '3.13'
+            manylinux: manylinux_2_28_x86_64
             platform_tag: x86_64
           # Linux ARM64 (using QEMU emulation)
           - arch: arm64
-            python: '3.10'
-            manylinux: manylinux2014_aarch64
-            platform_tag: aarch64
-          - arch: arm64
-            python: '3.11'
-            manylinux: manylinux2014_aarch64
-            platform_tag: aarch64
-          - arch: arm64
             python: '3.12'
-            manylinux: manylinux2014_aarch64
+            manylinux: manylinux_2_28_aarch64
+            platform_tag: aarch64
+          - arch: arm64
+            python: '3.13'
+            manylinux: manylinux_2_28_aarch64
             platform_tag: aarch64
 
     steps:
@@ -84,9 +76,8 @@ jobs:
             /bin/bash -c '
               set -ex
               
-              # Install build tools
-              yum install -y cmake3 ninja-build git wget
-              ln -sf /usr/bin/cmake3 /usr/bin/cmake
+              # Install build tools (manylinux_2_28 uses dnf)
+              dnf install -y cmake ninja-build git wget
               
               # Set paths
               export ARROW_HOME=/opt/arrow
