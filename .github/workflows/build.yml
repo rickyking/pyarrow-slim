@@ -93,6 +93,9 @@ jobs:
               export PATH="${ARROW_HOME}/bin:${PATH}"
               export LD_LIBRARY_PATH="${ARROW_HOME}/lib:${ARROW_HOME}/lib64"
               
+              # Fix CMake compatibility with bundled dependencies
+              export CMAKE_POLICY_VERSION_MINIMUM=3.5
+              
               # Clone Arrow
               cd /tmp
               git clone --depth 1 --branch apache-arrow-${ARROW_VERSION} \
