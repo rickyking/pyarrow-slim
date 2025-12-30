@@ -32,15 +32,15 @@ jobs:
             python: '3.13'
             manylinux: manylinux_2_28_x86_64
             platform_tag: x86_64
-          # Linux ARM64 (using QEMU emulation)
-          - arch: arm64
-            python: '3.12'
-            manylinux: manylinux_2_28_aarch64
-            platform_tag: aarch64
-          - arch: arm64
-            python: '3.13'
-            manylinux: manylinux_2_28_aarch64
-            platform_tag: aarch64
+          # Linux ARM64 (temporarily disabled for faster iteration)
+          # - arch: arm64
+          #   python: '3.12'
+          #   manylinux: manylinux_2_28_aarch64
+          #   platform_tag: aarch64
+          # - arch: arm64
+          #   python: '3.13'
+          #   manylinux: manylinux_2_28_aarch64
+          #   platform_tag: aarch64
 
     steps:
       - name: Checkout repository
