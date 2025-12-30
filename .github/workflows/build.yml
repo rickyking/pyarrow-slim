@@ -92,6 +92,12 @@ jobs:
               git clone --depth 1 --branch apache-arrow-${ARROW_VERSION} \
                 https://github.com/apache/arrow.git
               
+              # Pre-download Thrift from Apache Archive (dlcdn.apache.org often returns 404)
+              mkdir -p /tmp/arrow/cpp/build/thrift_ep-prefix/src
+              cd /tmp/arrow/cpp/build/thrift_ep-prefix/src
+              wget -q https://archive.apache.org/dist/thrift/0.20.0/thrift-0.20.0.tar.gz || \
+                wget -q https://github.com/apache/thrift/archive/refs/tags/v0.20.0.tar.gz -O thrift-0.20.0.tar.gz
+              
               # Build Arrow C++
               mkdir -p /tmp/arrow/cpp/build
               cd /tmp/arrow/cpp/build
