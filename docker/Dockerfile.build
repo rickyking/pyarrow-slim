@@ -1,0 +1,102 @@
+FROM quay.io/pypa/manylinux2014_x86_64 AS builder
+
+# Install build dependencies
+RUN yum install -y \
+    cmake3 \
+    ninja-build \
+    git \
+    wget \
+    && yum clean all
+
+# Create symlink for cmake
+RUN ln -sf /usr/bin/cmake3 /usr/bin/cmake
+
+# Set environment variables
+ENV ARROW_HOME=/opt/arrow
+ENV ARROW_VERSION=18.1.0
+ENV PATH="${ARROW_HOME}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="${ARROW_HOME}/lib:${ARROW_HOME}/lib64:${LD_LIBRARY_PATH}"
+
+# Clone Arrow repository
+WORKDIR /build
+RUN git clone --depth 1 --branch apache-arrow-${ARROW_VERSION} \
+    https://github.com/apache/arrow.git
+
+# Build Arrow C++
+WORKDIR /build/arrow/cpp/build
+RUN cmake .. \
+    -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    # Core features for PyIceberg
+    -DARROW_PARQUET=ON \
+    -DARROW_FILESYSTEM=ON \
+    -DARROW_COMPUTE=ON \
+    -DARROW_IPC=ON \
+    -DARROW_DATASET=ON \
+    # Compression codecs (common for Parquet)
+    -DARROW_WITH_SNAPPY=ON \
+    -DARROW_WITH_ZSTD=ON \
+    -DARROW_WITH_LZ4=ON \
+    -DARROW_WITH_ZLIB=ON \
+    # Disable unused features for smaller size
+    -DARROW_S3=OFF \
+    -DARROW_GCS=OFF \
+    -DARROW_AZURE=OFF \
+    -DARROW_HDFS=OFF \
+    -DARROW_FLIGHT=OFF \
+    -DARROW_FLIGHT_SQL=OFF \
+    -DARROW_GANDIVA=OFF \
+    -DARROW_ORC=OFF \
+    -DARROW_CUDA=OFF \
+    -DARROW_SUBSTRAIT=OFF \
+    -DARROW_CSV=OFF \
+    -DARROW_JSON=OFF \
+    -DARROW_ACERO=OFF \
+    # Build options
+    -DARROW_BUILD_TESTS=OFF \
+    -DARROW_BUILD_BENCHMARKS=OFF \
+    -DARROW_BUILD_UTILITIES=OFF \
+    -DARROW_DEPENDENCY_SOURCE=BUNDLED \
+    -DARROW_SIMD_LEVEL=SSE4_2
+
+RUN ninja install
+
+# Build PyArrow
+WORKDIR /build/arrow/python
+
+# Install Python build dependencies
+RUN /opt/python/cp311-cp311/bin/pip install \
+    cython \
+    numpy \
+    setuptools \
+    wheel \
+    setuptools_scm
+
+# Set Python and build PyArrow
+ENV PYARROW_WITH_PARQUET=1
+ENV PYARROW_WITH_DATASET=1
+ENV PYARROW_WITH_FILESYSTEM=1
+ENV PYARROW_WITH_COMPUTE=1
+ENV PYARROW_WITH_IPC=1
+ENV PYARROW_WITH_S3=0
+ENV PYARROW_WITH_GCS=0
+ENV PYARROW_WITH_HDFS=0
+ENV PYARROW_WITH_FLIGHT=0
+ENV PYARROW_WITH_GANDIVA=0
+ENV PYARROW_WITH_ORC=0
+ENV PYARROW_WITH_CUDA=0
+ENV PYARROW_WITH_SUBSTRAIT=0
+ENV PYARROW_WITH_ACERO=0
+ENV PYARROW_BUNDLE_ARROW_CPP=1
+ENV PYARROW_CMAKE_OPTIONS="-DARROW_SIMD_LEVEL=SSE4_2"
+
+RUN /opt/python/cp311-cp311/bin/python setup.py build_ext --build-type=release bdist_wheel
+
+# Repair wheel for manylinux compatibility
+RUN auditwheel repair dist/*.whl -w /wheelhouse
+
+# Final stage - output wheels
+FROM scratch AS wheels
+COPY --from=builder /wheelhouse/*.whl /
