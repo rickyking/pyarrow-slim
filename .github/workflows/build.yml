@@ -118,6 +118,8 @@ jobs:
                 -DARROW_WITH_ZSTD=ON \
                 -DARROW_WITH_LZ4=ON \
                 -DARROW_WITH_ZLIB=ON \
+                -DARROW_WITH_UTF8PROC=ON \
+                -DARROW_WITH_RE2=ON \
                 -DARROW_S3=OFF \
                 -DARROW_GCS=OFF \
                 -DARROW_AZURE=OFF \
@@ -314,6 +316,8 @@ jobs:
             -DARROW_WITH_ZSTD=ON \
             -DARROW_WITH_LZ4=ON \
             -DARROW_WITH_ZLIB=ON \
+            -DARROW_WITH_UTF8PROC=ON \
+            -DARROW_WITH_RE2=ON \
             -DARROW_S3=OFF \
             -DARROW_GCS=OFF \
             -DARROW_AZURE=OFF \
