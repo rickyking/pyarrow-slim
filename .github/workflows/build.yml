@@ -253,7 +253,7 @@ jobs:
 
   # Build macOS ARM64 wheels (native build, no Docker)
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:
@@ -396,7 +396,7 @@ jobs:
             platform_tag: aarch64
           # macOS ARM64 test
           - arch: macos-arm64
-            runner: macos-latest
+            runner: macos-15
             platform_tag: arm64
 
     steps:
