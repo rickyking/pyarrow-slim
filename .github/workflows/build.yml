@@ -128,7 +128,7 @@ jobs:
                 -DARROW_ORC=OFF \
                 -DARROW_CUDA=OFF \
                 -DARROW_SUBSTRAIT=OFF \
-                -DARROW_ACERO=OFF \
+                -DARROW_ACERO=ON \
                 -DARROW_BUILD_TESTS=OFF \
                 -DARROW_BUILD_BENCHMARKS=OFF \
                 -DARROW_BUILD_UTILITIES=OFF \
@@ -151,7 +151,7 @@ jobs:
               export PYARROW_WITH_ORC=0
               export PYARROW_WITH_CUDA=0
               export PYARROW_WITH_SUBSTRAIT=0
-              export PYARROW_WITH_ACERO=0
+              export PYARROW_WITH_ACERO=1
               export PYARROW_BUNDLE_ARROW_CPP=1
               
               ${PYTHON_BIN} setup.py build_ext --build-type=release bdist_wheel
@@ -324,7 +324,7 @@ jobs:
             -DARROW_ORC=OFF \
             -DARROW_CUDA=OFF \
             -DARROW_SUBSTRAIT=OFF \
-            -DARROW_ACERO=OFF \
+            -DARROW_ACERO=ON \
             -DARROW_BUILD_TESTS=OFF \
             -DARROW_BUILD_BENCHMARKS=OFF \
             -DARROW_BUILD_UTILITIES=OFF \
@@ -357,7 +357,7 @@ jobs:
           export PYARROW_WITH_ORC=0
           export PYARROW_WITH_CUDA=0
           export PYARROW_WITH_SUBSTRAIT=0
-          export PYARROW_WITH_ACERO=0
+          export PYARROW_WITH_ACERO=1
           export PYARROW_BUNDLE_ARROW_CPP=1
           
           python setup.py build_ext --build-type=release bdist_wheel
@@ -386,7 +386,7 @@ jobs:
 
   # Test the built wheels
   test:
-    needs: [build, build-macos]
+    needs: combine-wheels
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
