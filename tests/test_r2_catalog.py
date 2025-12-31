@@ -43,13 +43,14 @@ def check_pyarrow_features():
             print(f"✗ {description}: NOT available - {e}")
             return False
 
-    # Check S3 is NOT available (expected - we use s3fs instead)
+    # Check S3 IS available
     try:
         from pyarrow.fs import S3FileSystem
 
-        print("⚠ S3FileSystem: available (unexpected, but OK)")
+        print("✓ S3FileSystem: available")
     except ImportError:
-        print("✓ S3FileSystem: not available (expected - use s3fs)")
+        print("✗ S3FileSystem: NOT available (required)")
+        return False
 
     print()
     return True
@@ -67,7 +68,7 @@ def check_pyiceberg():
         print(f"✓ PyIceberg version: {pyiceberg.__version__}")
     except ImportError:
         print("✗ PyIceberg not installed")
-        print("  Run: pip install 'pyiceberg[s3fs]'")
+        print("  Run: pip install 'pyiceberg'")
         return False
 
     try:

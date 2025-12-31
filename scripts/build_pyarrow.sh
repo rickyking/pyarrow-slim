@@ -31,7 +31,7 @@ export PYARROW_WITH_COMPUTE=1
 export PYARROW_WITH_IPC=1
 
 # Disable features not built in C++
-export PYARROW_WITH_S3=0
+export PYARROW_WITH_S3=1
 export PYARROW_WITH_GCS=0
 export PYARROW_WITH_AZURE=0
 export PYARROW_WITH_HDFS=0
@@ -40,7 +40,7 @@ export PYARROW_WITH_GANDIVA=0
 export PYARROW_WITH_ORC=0
 export PYARROW_WITH_CUDA=0
 export PYARROW_WITH_SUBSTRAIT=0
-export PYARROW_WITH_ACERO=0
+export PYARROW_WITH_ACERO=1
 
 # Bundle Arrow C++ libraries into the wheel
 export PYARROW_BUNDLE_ARROW_CPP=1

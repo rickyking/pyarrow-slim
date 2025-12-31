@@ -41,7 +41,7 @@ cmake "${ARROW_SOURCE}/cpp" \
     -DARROW_WITH_BZ2=OFF \
     \
     `# === Disable unused features for smaller size ===` \
-    -DARROW_S3=OFF \
+    -DARROW_S3=ON \
     -DARROW_GCS=OFF \
     -DARROW_AZURE=OFF \
     -DARROW_HDFS=OFF \
@@ -53,7 +53,7 @@ cmake "${ARROW_SOURCE}/cpp" \
     -DARROW_SUBSTRAIT=OFF \
     -DARROW_CSV=OFF \
     -DARROW_JSON=OFF \
-    -DARROW_ACERO=OFF \
+    -DARROW_ACERO=ON \
     \
     `# === Build options ===` \
     -DARROW_BUILD_TESTS=OFF \
