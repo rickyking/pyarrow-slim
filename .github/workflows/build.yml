@@ -154,6 +154,8 @@ jobs:
               export PYARROW_WITH_CUDA=0
               export PYARROW_WITH_SUBSTRAIT=0
               export PYARROW_WITH_ACERO=1
+              export PYARROW_WITH_UTF8PROC=1
+              export PYARROW_WITH_RE2=1
               export PYARROW_BUNDLE_ARROW_CPP=1
               
               ${PYTHON_BIN} setup.py build_ext --build-type=release bdist_wheel
@@ -362,6 +364,8 @@ jobs:
           export PYARROW_WITH_CUDA=0
           export PYARROW_WITH_SUBSTRAIT=0
           export PYARROW_WITH_ACERO=1
+          export PYARROW_WITH_UTF8PROC=1
+          export PYARROW_WITH_RE2=1
           export PYARROW_BUNDLE_ARROW_CPP=1
           
           python setup.py build_ext --build-type=release bdist_wheel
