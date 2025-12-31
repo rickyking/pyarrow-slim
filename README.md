@@ -11,7 +11,7 @@ The standard PyArrow wheel is ~200MB, which is too large for size-constrained en
 - Cloudflare Workers
 - AWS Lambda
 
-This repository builds a slim PyArrow (~70-90MB) with only the features needed for PyIceberg.
+This repository builds a slim PyArrow (~70-90MB) with only the features needed for PyIceberg. It also enables native S3 support, eliminating the need for the heavy `s3fs` dependency.
 
 ## Installation
 
@@ -39,6 +39,7 @@ pip install pyarrow-22.0.0-cp312-cp312-manylinux_2_28_x86_64.whl
 |----------|-----------------|
 | Linux x86_64 (amd64) | 3.12, 3.13 |
 | Linux aarch64 (arm64) | 3.12, 3.13 |
+| macOS ARM64 (Apple Silicon) | 3.12, 3.13 |
 
 ## Enabled Features
 
@@ -46,11 +47,15 @@ pip install pyarrow-22.0.0-cp312-cp312-manylinux_2_28_x86_64.whl
 |---------|--------|-------------|
 | `ARROW_PARQUET` | ✅ ON | Parquet file read/write |
 | `ARROW_FILESYSTEM` | ✅ ON | Filesystem abstraction |
+| `ARROW_S3` | ✅ ON | Native S3/R2 filesystem support |
 | `ARROW_COMPUTE` | ✅ ON | Compute kernels |
+| `ARROW_ACERO` | ✅ ON | Query execution engine |
 | `ARROW_IPC` | ✅ ON | Inter-process communication |
 | `ARROW_DATASET` | ✅ ON | Dataset API for partitioned data |
 | `ARROW_CSV` | ✅ ON | CSV read/write |
 | `ARROW_JSON` | ✅ ON | JSON read/write |
+| `UTF8PROC` | ✅ ON | Unicode string processing |
+| `RE2` | ✅ ON | Regular expression support |
 | Snappy | ✅ ON | Compression codec |
 | ZSTD | ✅ ON | Compression codec |
 | LZ4 | ✅ ON | Compression codec |
@@ -60,7 +65,6 @@ pip install pyarrow-22.0.0-cp312-cp312-manylinux_2_28_x86_64.whl
 
 | Feature | Reason |
 |---------|--------|
-| `ARROW_S3` | Use `s3fs` instead for R2/S3 access |
 | `ARROW_GCS` | Not needed for R2 |
 | `ARROW_AZURE` | Not needed for R2 |
 | `ARROW_HDFS` | Not needed |
@@ -69,13 +73,14 @@ pip install pyarrow-22.0.0-cp312-cp312-manylinux_2_28_x86_64.whl
 | `ARROW_ORC` | ORC format not needed |
 | `ARROW_CUDA` | GPU support not needed |
 | `ARROW_SUBSTRAIT` | Query planning not needed |
-| `ARROW_ACERO` | Query execution not needed |
 
 ## Usage with PyIceberg
 
 ```python
-# Install dependencies
-# pip install pyiceberg[s3fs] pyarrow  # Use slim wheel
+# 1. First, install the slim PyArrow wheel (see Installation above)
+# 2. Then install PyIceberg (do not install s3fs)
+# pip install pyiceberg
+# Note: This build includes native S3/R2 support. You do NOT need s3fs.
 
 from pyiceberg.catalog import load_catalog
 
@@ -105,8 +110,9 @@ df = table.scan().to_pandas()
 ## Build Configuration
 
 - **Arrow Version**: 22.0.0 (latest)
-- **Base Image**: `manylinux_2_28` (AlmaLinux 8)
-- **ARM64 Builds**: Native GitHub runners (`ubuntu-24.04-arm`)
+- **Linux Base Image**: `manylinux_2_28` (AlmaLinux 8)
+- **Linux ARM64 Builds**: Native GitHub runners (`ubuntu-24.04-arm`)
+- **macOS Builds**: Native ARM64 on `macos-15` runners
 
 ## Creating a Release
 
