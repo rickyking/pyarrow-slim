@@ -181,7 +181,7 @@ jobs:
 
   # Combine all wheels into a single artifact
   combine-wheels:
-    needs: build
+    needs: [build, build-macos]
     runs-on: ubuntu-latest
     steps:
       - name: Download all wheel artifacts
@@ -251,9 +251,137 @@ jobs:
             pip install https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/pyarrow-18.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
             ```
 
+  # Build macOS ARM64 wheels (native build, no Docker)
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.12', '3.13']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install build dependencies
+        run: |
+          brew install cmake ninja
+
+      - name: Get Python version tag
+        id: python
+        run: |
+          PYTHON_TAG="cp$(echo ${{ matrix.python }} | tr -d '.')"
+          echo "tag=${PYTHON_TAG}" >> $GITHUB_OUTPUT
+          echo "Python tag: ${PYTHON_TAG}"
+
+      - name: Create directories
+        run: |
+          mkdir -p wheelhouse
+          mkdir -p $HOME/arrow-install
+
+      - name: Clone Arrow
+        run: |
+          cd /tmp
+          git clone --depth 1 --branch apache-arrow-${{ env.ARROW_VERSION }} \
+            https://github.com/apache/arrow.git
+
+      - name: Build Arrow C++
+        run: |
+          export ARROW_HOME=$HOME/arrow-install
+          
+          mkdir -p /tmp/arrow/cpp/build
+          cd /tmp/arrow/cpp/build
+          
+          cmake .. \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DARROW_PARQUET=ON \
+            -DARROW_FILESYSTEM=ON \
+            -DARROW_COMPUTE=ON \
+            -DARROW_IPC=ON \
+            -DARROW_DATASET=ON \
+            -DARROW_CSV=ON \
+            -DARROW_JSON=ON \
+            -DARROW_WITH_SNAPPY=ON \
+            -DARROW_WITH_ZSTD=ON \
+            -DARROW_WITH_LZ4=ON \
+            -DARROW_WITH_ZLIB=ON \
+            -DARROW_S3=OFF \
+            -DARROW_GCS=OFF \
+            -DARROW_AZURE=OFF \
+            -DARROW_HDFS=OFF \
+            -DARROW_FLIGHT=OFF \
+            -DARROW_FLIGHT_SQL=OFF \
+            -DARROW_GANDIVA=OFF \
+            -DARROW_ORC=OFF \
+            -DARROW_CUDA=OFF \
+            -DARROW_SUBSTRAIT=OFF \
+            -DARROW_ACERO=OFF \
+            -DARROW_BUILD_TESTS=OFF \
+            -DARROW_BUILD_BENCHMARKS=OFF \
+            -DARROW_BUILD_UTILITIES=OFF \
+            -DARROW_DEPENDENCY_SOURCE=BUNDLED
+          
+          ninja install
+
+      - name: Build PyArrow wheel
+        run: |
+          export ARROW_HOME=$HOME/arrow-install
+          export PATH="${ARROW_HOME}/bin:${PATH}"
+          export DYLD_LIBRARY_PATH="${ARROW_HOME}/lib"
+          
+          python -m pip install --upgrade pip
+          python -m pip install cython numpy setuptools wheel setuptools_scm delocate
+          
+          cd /tmp/arrow/python
+          
+          export PYARROW_WITH_PARQUET=1
+          export PYARROW_WITH_DATASET=1
+          export PYARROW_WITH_S3=0
+          export PYARROW_WITH_GCS=0
+          export PYARROW_WITH_HDFS=0
+          export PYARROW_WITH_FLIGHT=0
+          export PYARROW_WITH_GANDIVA=0
+          export PYARROW_WITH_ORC=0
+          export PYARROW_WITH_CUDA=0
+          export PYARROW_WITH_SUBSTRAIT=0
+          export PYARROW_WITH_ACERO=0
+          export PYARROW_BUNDLE_ARROW_CPP=1
+          
+          python setup.py build_ext --build-type=release bdist_wheel
+          
+          # Repair wheel with delocate (macOS equivalent of auditwheel)
+          delocate-wheel -v -w ${{ github.workspace }}/wheelhouse dist/*.whl
+
+      - name: List built wheels
+        run: |
+          echo "=== Built wheels ==="
+          ls -lh wheelhouse/
+          echo ""
+          echo "=== Wheel sizes ==="
+          for wheel in wheelhouse/*.whl; do
+            SIZE_BYTES=$(stat -f%z "$wheel")
+            SIZE_MB=$((SIZE_BYTES / 1024 / 1024))
+            echo "$(basename $wheel): ${SIZE_MB} MB"
+          done
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyarrow-slim-macos-arm64-py${{ matrix.python }}
+          path: wheelhouse/*.whl
+          retention-days: 30
+
   # Test the built wheels
   test:
-    needs: combine-wheels
+    needs: [build, build-macos]
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -266,6 +394,10 @@ jobs:
           - arch: arm64
             runner: ubuntu-24.04-arm
             platform_tag: aarch64
+          # macOS ARM64 test
+          - arch: macos-arm64
+            runner: macos-latest
+            platform_tag: arm64
 
     steps:
       - name: Checkout repository
@@ -334,7 +466,12 @@ jobs:
       - name: Test wheel size
         run: |
           WHEEL=$(ls wheels/*cp312*${{ matrix.platform_tag }}*.whl | head -1)
-          SIZE=$(stat -c%s "${WHEEL}")
+          # macOS uses -f%z, Linux uses -c%s
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            SIZE=$(stat -f%z "${WHEEL}")
+          else
+            SIZE=$(stat -c%s "${WHEEL}")
+          fi
           SIZE_MB=$((SIZE / 1024 / 1024))
           echo "Wheel size: ${SIZE_MB} MB"
           if [ ${SIZE_MB} -gt 100 ]; then

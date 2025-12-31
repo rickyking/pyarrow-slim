@@ -1,3 +1,5 @@
+[![Build Slim PyArrow](https://github.com/rickyking/pyarrow-slim/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/rickyking/pyarrow-slim/actions/workflows/build.yml)
+
 # Slim PyArrow for PyIceberg
 
 A minimal PyArrow build optimized for [PyIceberg](https://py.iceberg.apache.org/) with [Cloudflare R2 Data Catalog](https://developers.cloudflare.com/r2/data-catalog/).
